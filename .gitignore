@@ -1,0 +1,4 @@
+.vagrant
+*.swp
+conv_executor
+conv_scheduler
