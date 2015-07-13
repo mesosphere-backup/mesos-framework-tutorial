@@ -19,8 +19,12 @@
 package scheduler
 
 import (
+	"github.com/gogo/protobuf/proto"
+	"strconv"
+
 	log "github.com/golang/glog"
 	mesos "github.com/mesos/mesos-go/mesosproto"
+	util "github.com/mesos/mesos-go/mesosutil"
 	sched "github.com/mesos/mesos-go/scheduler"
 )
 
@@ -58,6 +62,41 @@ func (sched *ExampleScheduler) Disconnected(sched.SchedulerDriver) {
 
 func (sched *ExampleScheduler) ResourceOffers(driver sched.SchedulerDriver, offers []*mesos.Offer) {
 	logOffers(offers)
+
+	for _, offer := range offers {
+		remainingCpus := getOfferCpu(offer)
+		remainingMems := getOfferMem(offer)
+
+		var tasks []*mesos.TaskInfo
+		for sched.cpuPerTask <= remainingCpus &&
+			sched.memPerTask <= remainingMems {
+
+			sched.tasksLaunched++
+
+			taskId := &mesos.TaskID{
+				Value: proto.String(strconv.Itoa(sched.tasksLaunched)),
+			}
+
+			task := &mesos.TaskInfo{
+				Name:     proto.String("go-task-" + taskId.GetValue()),
+				TaskId:   taskId,
+				SlaveId:  offer.SlaveId,
+				Executor: sched.executor,
+				Resources: []*mesos.Resource{
+					util.NewScalarResource("cpus", sched.cpuPerTask),
+					util.NewScalarResource("mem", sched.memPerTask),
+				},
+			}
+			log.Infof("Prepared task: %s with offer %s for launch\n", task.GetName(), offer.Id.GetValue())
+
+			tasks = append(tasks, task)
+			remainingCpus -= sched.cpuPerTask
+			remainingMems -= sched.memPerTask
+		}
+		log.Infoln("Launching ", len(tasks), "tasks for offer", offer.Id.GetValue())
+		driver.LaunchTasks([]*mesos.OfferID{offer.Id}, tasks, &mesos.Filters{RefuseSeconds: proto.Float64(1)})
+	}
+
 }
 
 func (sched *ExampleScheduler) StatusUpdate(driver sched.SchedulerDriver, status *mesos.TaskStatus) {

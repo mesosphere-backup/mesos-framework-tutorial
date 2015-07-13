@@ -1,4 +1,6 @@
 .vagrant
 *.swp
-conv_executor
-conv_scheduler
+executor
+mesos-framework-tutorial
+example_scheduler
+example_executor
