@@ -22,7 +22,6 @@ import (
 	"flag"
 	"net"
 	"os"
-	"strconv"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -46,7 +45,6 @@ var (
 	artifactPort = flag.Int("artifactPort", defaultArtifactPort, "Binding port for artifact server")
 	master       = flag.String("master", "127.0.0.1:5050", "Master address <ip:port>")
 	executorPath = flag.String("executor", "./example_executor", "Path to test executor")
-	taskCount    = flag.String("task-count", "5", "Total task count to run.")
 )
 
 func init() {
@@ -62,13 +60,7 @@ func main() {
 	exec := prepareExecutorInfo(uri, getExecutorCmd(*executorPath))
 
 	// Scheduler
-	numTasks, err := strconv.Atoi(*taskCount)
-	if err != nil {
-		log.Fatalf("Failed to convert '%v' to an integer with error: %v\n", taskCount, err)
-		os.Exit(-1)
-	}
-
-	scheduler := NewExampleScheduler(exec, numTasks, CPUS_PER_TASK, MEM_PER_TASK)
+	scheduler, err := NewExampleScheduler(exec, CPUS_PER_TASK, MEM_PER_TASK)
 	if err != nil {
 		log.Fatalf("Failed to create scheduler with error: %v\n", err)
 		os.Exit(-2)

@@ -1,7 +1,10 @@
 package server
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	log "github.com/golang/glog"
@@ -12,7 +15,38 @@ type HttpPathMapping struct {
 	FilePath string
 }
 
-func registerHandler(fileToServe HttpPathMapping) {
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("image")
+	fileName := r.FormValue("name")
+
+	if err != nil {
+		log.Infof("Failed to handle upload request with error: %v\n", err)
+	}
+	defer file.Close()
+
+	out, err := os.Create(fmt.Sprintf("/vagrant/%s", fileName))
+
+	if err != nil {
+		fmt.Fprintf(w, "Unable to create the file for writing. Check your write access privilege")
+		return
+	}
+	defer out.Close()
+
+	// Write the content from POST to the file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		log.Infoln(w, err)
+	}
+
+	fmt.Fprintf(w, "File uploaded successfully : ")
+	fmt.Fprintf(w, header.Filename)
+}
+
+func registerUploadHandler() {
+	http.HandleFunc("/", uploadHandler)
+}
+
+func registerDownloadHandler(fileToServe HttpPathMapping) {
 	log.Infof("httpPath: %v\n", fileToServe.HttpPath)
 	log.Infof("filePath: %v\n", fileToServe.FilePath)
 
@@ -21,9 +55,9 @@ func registerHandler(fileToServe HttpPathMapping) {
 	})
 }
 
-func registerHandlers(filesToServe []HttpPathMapping) {
+func registerDownloadHandlers(filesToServe []HttpPathMapping) {
 	for _, m := range filesToServe {
-		registerHandler(m)
+		registerDownloadHandler(m)
 	}
 }
 
@@ -56,6 +90,7 @@ func GetDefaultMappings(filePaths []string) []HttpPathMapping {
 }
 
 func StartHttpServer(address string, filesToServe []HttpPathMapping) {
-	registerHandlers(filesToServe)
+	registerDownloadHandlers(filesToServe)
+	registerUploadHandler()
 	go http.ListenAndServe(address, nil)
 }
