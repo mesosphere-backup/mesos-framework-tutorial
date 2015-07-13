@@ -32,9 +32,9 @@ At any point from here on, you should be able to compile and run the code.  Both
 
 ```sh
 $ cd $GOPATH/src/github.com/mesosphere/mesos-framework-tutorial
-$ go build -o example_scheduler main.go
+$ go build -o example_scheduler
 $ cd $GOPATH/src/github.com/mesosphere/mesos-framework-tutorial/executor
-$ go build -o example_executor example_executor.go
+$ go build -o example_executor
 ```
 
 The example can then be run at any commit in the tutorial branch with:
@@ -62,7 +62,7 @@ In the [first commit](https://github.com/mesosphere/mesos-framework-tutorial/com
 
 'executor/example_executor.go' compiles to an executable binary which is capable of hosting tasks.  It implements the executor interface and for the most part just logs calls from Mesos.  The exception is the LaunchTask method which makes status updates regarding tasks, but does not actually do any work.
 
-If you compile and run the example code at this point you will see that the scheduler receives one resource offer from Mesos and then appears to block.  By not accepting the resource offer the scheduler has implicitly rejected the offer.  No tasks are launched.  A configurable timeout will eventually occur and the resource will again be offered to the scheduler.  The output should like this:
+If you compile and run the example code at this point you will see that the scheduler receives one resource offer from Mesos and then appears to block.  The output should like this:
 
 ```sh
 ...
@@ -90,3 +90,18 @@ I0713 19:06:54.176197   25228 example_scheduler.go:103] Status update: task 1  i
 I0713 19:06:54.178064   25228 example_scheduler.go:103] Status update: task 2  is in state  TASK_FINISHED
 ...
 ```
+
+#### Image Processing Example
+In order to show data and metadata flowing back and forth between the scheduler and the executor, we can implement a simple batch image processing framework.  In this case we'll invert the images, as show below.
+
+![Original image](https://raw.githubusercontent.com/mesosphere/mesos-framework-tutorial/tutorial/original.jpg?token=AAinR_TyrX7bO_bT7H4QJRMtj5Be-jYAks5VrZPSwA%3D%3D)
+
+![Inverted image](https://raw.githubusercontent.com/mesosphere/mesos-framework-tutorial/tutorial/inverted.jpg?token=AAinR7nLI_1CmA9ImzaiARIniQt0K1lyks5VrZQRwA%3D%3D)
+
+The framework should take [a list of image URLs](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/images), assign each URL to one task, and collect the results of the image processing.  The changes necessary to accomplish this can be seen in the [third commit of this tutorial](https://github.com/mesosphere/mesos-framework-tutorial/commit/8c91479951b1a5bd6467e548f1ebd861f34ba547).
+
+In order for each task to know which image it should process we need to [encapsulate the URL in the task here](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/scheduler/example_scheduler.go#L104).  The executor then [reads this information on the other side](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/executor/example_executor.go#L65).  The executor then [processes the image and uploads it](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/executor/example_executor.go#L72-87) to the same HTTP server that previously served the executor binary.
+
+The HTTP server was modified to allow for image uploads, by [registering an upload handler function](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/executor/example_executor.go#L72-87).  It saves images to the directory from which the Vagrant VM was launched.  This [directory mapping was added](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/Vagrantfile#L63) in the VagrantFile.
+
+
