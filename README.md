@@ -50,9 +50,9 @@ The absolute minimum requirements for a framework consist of 3 components: sched
 
 The scheduler receives resource offers from mesos and makes decisions about what tasks should consume which resources.
 
-The executor knows how to run the tasks that the schedulder launches.  A more detailed explanation is [available here](http://mesos.apache.org/documentation/latest/mesos-architecture/).
+The executor knows how to run the tasks that the scheduler launches.  A more detailed explanation is [available here](http://mesos.apache.org/documentation/latest/mesos-architecture/).
 
-The file server is necessary in order to provide Mesos a location, from which it can retrieve the executor binary.  This third component is usually not explicitly called out as a requirement of a framework.  It is not technically a component of the framework but is a necessity for the end-to-end functioning of a framework.  Of course, multiple frameworks can share the same server.
+The file server is necessary in order to provide Mesos a location from which it can retrieve the executor binary.  This third component is usually not explicitly called out as a requirement of a framework.  It is not technically a component of the framework but is a necessity for the end-to-end functioning of a framework.  Of course, multiple frameworks can share the same server.
 
 In the [first commit](https://github.com/mesosphere/mesos-framework-tutorial/commit/aae4f846a6dd7e5e0fba2d737dc82718ddde9e2b) the three components are in their respective directories.
 
