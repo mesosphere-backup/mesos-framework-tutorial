@@ -19,7 +19,7 @@ Within the VM created above [install Go](https://golang.org/doc/install) and [se
 ```sh
 $ mkdir -p $GOPATH/src/github.com/mesosphere
 $ cd $GOPATH/src/github.com/mesosphere
-$ git clone git@github.com:mesosphere/mesos-framework-tutorial.git
+$ git clone https://github.com/mesosphere/mesos-framework-tutorial.git
 $ go get ./...
 $ cd mesos-framework-tutorial/
 $ git checkout -b tutorial origin/tutorial
