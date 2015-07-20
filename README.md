@@ -73,7 +73,7 @@ I0713 19:03:42.776181   25174 utils.go:32] Received Offer <20150713-...> with cp
 
 #### Launch Tasks
 
-In order to do something which is at least moderately interesting, let's start accepting a few offers from Mesos and launch some tasks.  If we look at the [second commit](https://github.com/mesosphere/mesos-framework-tutorial/commit/bc5da5bb52ad91871fb842e454133fe45d08d319) we see that we now iterate across the offers provided by Mesos and launch tasks until we run out of resources.
+In order to do something which is at least moderately interesting, let's start accepting a few offers from Mesos and launch some tasks.  If we look at the [second commit](https://github.com/mesosphere/mesos-framework-tutorial/commit/e5e18f6f8c1a28d2d2d3ba725a99841b26e2f425) we see that we now iterate across the offers provided by Mesos and launch tasks until we run out of resources.
 
 The executor launches the tasks, and reports status to Mesos indicating that the tasks are finished.  This frees the resources and they are offered to the scheduler again.  This loop continues endlessly.  As long as the scheduler process doesn't crash, a long running distributed service has now been completed.  'example_executor.go' indicates where real work should be done in it's 'LaunchTask' method.
 
