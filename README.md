@@ -98,7 +98,7 @@ In order to show data and metadata flowing back and forth between the scheduler 
 
 ![Inverted image](https://raw.githubusercontent.com/mesosphere/mesos-framework-tutorial/tutorial/inverted.jpg?token=AAinR7nLI_1CmA9ImzaiARIniQt0K1lyks5VrZQRwA%3D%3D)
 
-The framework should take [a list of image URLs](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/images), assign each URL to one task, and collect the results of the image processing.  The changes necessary to accomplish this can be seen in the [third commit of this tutorial](https://github.com/mesosphere/mesos-framework-tutorial/commit/8c91479951b1a5bd6467e548f1ebd861f34ba547).
+The framework should take [a list of image URLs](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/images), assign each URL to one task, and collect the results of the image processing.  The changes necessary to accomplish this can be seen in the [third commit of this tutorial](https://github.com/mesosphere/mesos-framework-tutorial/commit/2f0d22b39d5507d645bee165d6be3aaf281ea4fd).
 
 In order for each task to know which image it should process we need to [encapsulate the URL in the task here](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/scheduler/example_scheduler.go#L104).  The executor then [reads this information on the other side](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/executor/example_executor.go#L65).  The executor then [processes the image and uploads it](https://github.com/mesosphere/mesos-framework-tutorial/blob/tutorial/executor/example_executor.go#L72-87) to the same HTTP server that previously served the executor binary.
 
