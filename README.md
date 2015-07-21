@@ -41,7 +41,7 @@ The example can then be run at any commit in the tutorial branch with:
 
 ```sh
 $ cd $GOPATH/src/github.com/mesosphere/mesos-framework-tutorial
-$ ./example_scheduler --master=127.0.0.1:5050 --executor="/home/vagrant/go/src/github.com/mesosphere/mesos-framework-tutorial/executor/example_executor" --logtostderr=true
+$ ./example_scheduler --master=127.0.0.1:5050 --executor="$GOPATH/src/github.com/mesosphere/mesos-framework-tutorial/executor/example_executor" --logtostderr=true
 ```
 
 #### Framework template
