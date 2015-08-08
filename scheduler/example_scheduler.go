@@ -19,6 +19,7 @@
 package scheduler
 
 import (
+	"encoding/json"
 	"github.com/gogo/protobuf/proto"
 	"strconv"
 
@@ -26,6 +27,7 @@ import (
 	mesos "github.com/mesos/mesos-go/mesosproto"
 	util "github.com/mesos/mesos-go/mesosutil"
 	sched "github.com/mesos/mesos-go/scheduler"
+	payload "github.com/mesosphere/mesos-framework-tutorial/payload"
 )
 
 type ExampleScheduler struct {
@@ -36,9 +38,10 @@ type ExampleScheduler struct {
 	images        []string
 	cpuPerTask    float64
 	memPerTask    float64
+	serverAddress string
 }
 
-func NewExampleScheduler(exec *mesos.ExecutorInfo, cpuPerTask float64, memPerTask float64) (*ExampleScheduler, error) {
+func NewExampleScheduler(exec *mesos.ExecutorInfo, cpuPerTask float64, memPerTask float64, serverAddress string) (*ExampleScheduler, error) {
 	images, err := readLines("images")
 	if err != nil {
 		log.Errorf("Failed to read image list with error: %v\n", err)
@@ -53,6 +56,7 @@ func NewExampleScheduler(exec *mesos.ExecutorInfo, cpuPerTask float64, memPerTas
 		images:        images,
 		cpuPerTask:    cpuPerTask,
 		memPerTask:    memPerTask,
+		serverAddress: serverAddress,
 	}, nil
 }
 
@@ -69,6 +73,7 @@ func (sched *ExampleScheduler) Disconnected(sched.SchedulerDriver) {
 }
 
 func (sched *ExampleScheduler) ResourceOffers(driver sched.SchedulerDriver, offers []*mesos.Offer) {
+	log.Infoln("ResourceOffers called")
 	logOffers(offers)
 
 	if sched.tasksLaunched >= sched.totalTasks {
@@ -85,7 +90,18 @@ func (sched *ExampleScheduler) ResourceOffers(driver sched.SchedulerDriver, offe
 			sched.tasksLaunched < sched.totalTasks {
 
 			log.Infof("Processing image %v of %v\n", sched.tasksLaunched, sched.totalTasks)
+
+			// Build payload
 			fileName := sched.images[sched.tasksLaunched]
+			payld := payload.TaskPayload{fileName, sched.serverAddress}
+			log.Infof("Payload In: %v\n", payld)
+
+			b, err := json.Marshal(payld)
+			if err != nil {
+				log.Errorf("Failed to marshal payload with error: %v\n", err)
+				return
+			}
+
 			sched.tasksLaunched++
 
 			taskId := &mesos.TaskID{
@@ -101,7 +117,7 @@ func (sched *ExampleScheduler) ResourceOffers(driver sched.SchedulerDriver, offe
 					util.NewScalarResource("cpus", sched.cpuPerTask),
 					util.NewScalarResource("mem", sched.memPerTask),
 				},
-				Data: []byte(fileName),
+				Data: b,
 			}
 			log.Infof("Prepared task: %s with offer %s for launch\n", task.GetName(), offer.Id.GetValue())
 

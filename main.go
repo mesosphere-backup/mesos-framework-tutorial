@@ -20,6 +20,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net"
 	"os"
 
@@ -60,7 +61,9 @@ func main() {
 	exec := prepareExecutorInfo(uri, getExecutorCmd(*executorPath))
 
 	// Scheduler
-	scheduler, err := NewExampleScheduler(exec, CPUS_PER_TASK, MEM_PER_TASK)
+	httpServerAddress := fmt.Sprintf("http://%s:%d", *address, *artifactPort)
+	log.Infof("ServerAdress: %v\n", httpServerAddress)
+	scheduler, err := NewExampleScheduler(exec, CPUS_PER_TASK, MEM_PER_TASK, httpServerAddress)
 	if err != nil {
 		log.Fatalf("Failed to create scheduler with error: %v\n", err)
 		os.Exit(-2)

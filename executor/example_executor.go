@@ -19,11 +19,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 
 	exec "github.com/mesos/mesos-go/executor"
 	mesos "github.com/mesos/mesos-go/mesosproto"
+	payload "github.com/mesosphere/mesos-framework-tutorial/payload"
 )
 
 type exampleExecutor struct {
@@ -61,10 +63,15 @@ func (exec *exampleExecutor) LaunchTask(driver exec.ExecutorDriver, taskInfo *me
 	exec.tasksLaunched++
 	fmt.Println("Total tasks launched ", exec.tasksLaunched)
 
+	// Decode payload
+	var decodedPayload payload.TaskPayload
+	err = json.Unmarshal(taskInfo.Data, &decodedPayload)
+	fmt.Printf("Payload Out: %v\n", decodedPayload)
+
 	// Download image
-	fileName, err := downloadImage(string(taskInfo.Data))
+	fileName, err := downloadImage(string(decodedPayload.FileName))
 	if err != nil {
-		fmt.Printf("Failed to download image with error: %v\n", err)
+		fmt.Printf("Failed to download image '%v' with error: %v\n", fileName, err)
 		return
 	}
 	fmt.Printf("Downloaded image: %v\n", fileName)
@@ -79,7 +86,7 @@ func (exec *exampleExecutor) LaunchTask(driver exec.ExecutorDriver, taskInfo *me
 
 	// Upload image
 	fmt.Printf("Uploading image: %v\n", outFile)
-	if err = uploadImage("http://127.0.0.1:12345/", outFile); err != nil {
+	if err = uploadImage(decodedPayload.HttpServerAddress, outFile); err != nil {
 		fmt.Printf("Failed to upload image with error: %v\n", err)
 		return
 	} else {
